@@ -1,4 +1,9 @@
+using Application.Authentication.Interfaces;
+using Domain.Interfaces;
 using Infrastructure.Persistence.Context;
+using Infrastructure.Persistence.Repositories;
+using Infrastructure.Services;
+using Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +19,11 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // JWT Settings
+        services.Configure<JwtSettings>(options => 
+            configuration.GetSection("JwtSettings").Bind(options));
+
+        // Database
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         
         services.AddDbContext<ApplicationDbContext>(options =>
@@ -25,6 +35,12 @@ public static class DependencyInjection
             );
         });
 
+        // Repositories
+        services.AddScoped<IUserRepository, UserRepository>();
+
+        // Services
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<IJwtService, JwtService>();
 
         return services;
     }

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ASeYsFrbK1k=",
+  "dgSpecHash": "rRd2n9J2ZHk=",
   "success": true,
   "projectFilePath": "D:\\Documents\\01.Pruebas Tecnicas\\FleetPulse\\FleetPulse-backend\\Simulator\\Simulator.csproj",
   "expectedPackageFiles": [
@@ -25,7 +25,11 @@
     "C:\\Users\\USUARIO\\.nuget\\packages\\system.diagnostics.diagnosticsource\\10.0.10\\system.diagnostics.diagnosticsource.10.0.10.nupkg.sha512",
     "C:\\Users\\USUARIO\\.nuget\\packages\\system.io.pipelines\\10.0.10\\system.io.pipelines.10.0.10.nupkg.sha512",
     "C:\\Users\\USUARIO\\.nuget\\packages\\system.text.encodings.web\\10.0.10\\system.text.encodings.web.10.0.10.nupkg.sha512",
-    "C:\\Users\\USUARIO\\.nuget\\packages\\system.text.json\\10.0.10\\system.text.json.10.0.10.nupkg.sha512"
+    "C:\\Users\\USUARIO\\.nuget\\packages\\system.text.json\\10.0.10\\system.text.json.10.0.10.nupkg.sha512",
+    "C:\\Users\\USUARIO\\.nuget\\packages\\microsoft.netcore.app.ref\\8.0.29\\microsoft.netcore.app.ref.8.0.29.nupkg.sha512",
+    "C:\\Users\\USUARIO\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\8.0.29\\microsoft.windowsdesktop.app.ref.8.0.29.nupkg.sha512",
+    "C:\\Users\\USUARIO\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\8.0.29\\microsoft.aspnetcore.app.ref.8.0.29.nupkg.sha512",
+    "C:\\Users\\USUARIO\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\8.0.29\\microsoft.netcore.app.host.win-x64.8.0.29.nupkg.sha512"
   ],
   "logs": []
 }

@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Application.Authentication.Services;
 
 namespace Application;
 
@@ -10,10 +11,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
-
+        // FluentValidation
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+
+        // Services
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         return services;
     }
