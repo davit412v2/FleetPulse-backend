@@ -1,0 +1,101 @@
+## ==========================
+## Build
+## ==========================
+
+[Bb]in/
+[Oo]bj/
+
+## Visual Studio
+.vs/
+
+## Rider
+.idea/
+
+## VS Code
+.vscode/
+
+## User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+
+## Logs
+*.log
+
+## Test Results
+TestResults/
+
+## Coverage
+coverage/
+coverage.*
+*.coverage
+*.coveragexml
+
+## DotCover
+*.dotCover
+
+## BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
+
+## Publish
+publish/
+
+## Generated files
+Generated/
+Generated_Code/
+
+## Database
+*.mdf
+*.ldf
+
+## SQLite
+*.db
+*.db-shm
+*.db-wal
+
+## Environment
+.env
+.env.*
+!.env.example
+
+## Secrets
+secrets.json
+
+## ASP.NET User Secrets
+**/secrets.json
+
+## Certificates
+*.pfx
+*.p12
+*.snk
+
+## Azure
+PublishProfiles/
+
+## Docker
+docker-compose.override.yml
+
+## Node (si usas Angular/React/Vue)
+node_modules/
+dist/
+
+## macOS
+.DS_Store
+
+## Windows
+Thumbs.db
+Desktop.ini
+
+## Linux
+*~
+
+## Temporary files
+*.tmp
+*.temp
