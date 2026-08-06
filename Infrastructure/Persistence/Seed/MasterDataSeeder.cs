@@ -11,26 +11,43 @@ public static class MasterDataSeeder
 {
     public static async Task SeedAsync(ApplicationDbContext context)
     {
-        // Verificar si ya hay datos
-        if (await context.Drivers.AnyAsync())
+        // Verificar si ya hay datos COMPLETOS
+        var hasDrivers = await context.Drivers.AnyAsync();
+        var hasVehicles = await context.Vehicles.AnyAsync();
+        var hasRoutes = await context.Routes.AnyAsync();
+
+        // Si YA están todos los datos, no hacer nada
+        if (hasDrivers && hasVehicles && hasRoutes)
             return;
 
         var now = DateTime.UtcNow;
 
-        // Drivers
-        var drivers = GetDrivers(now);
-        await context.Drivers.AddRangeAsync(drivers);
-        await context.SaveChangesAsync();
+        // Insertar Drivers solo si no existen
+        if (!hasDrivers)
+        {
+            var drivers = GetDrivers(now);
+            await context.Drivers.AddRangeAsync(drivers);
+            await context.SaveChangesAsync();
+        }
 
-        // Vehicles
-        var vehicles = GetVehicles(drivers, now);
-        await context.Vehicles.AddRangeAsync(vehicles);
-        await context.SaveChangesAsync();
+        // Obtener drivers existentes (para FK de Vehicles)
+        var existingDrivers = await context.Drivers.ToListAsync();
 
-        // Routes con RoutePoints
-        var routes = GetRoutes(now);
-        await context.Routes.AddRangeAsync(routes);
-        await context.SaveChangesAsync();
+        // Insertar Vehicles solo si no existen
+        if (!hasVehicles && existingDrivers.Any())
+        {
+            var vehicles = GetVehicles(existingDrivers, now);
+            await context.Vehicles.AddRangeAsync(vehicles);
+            await context.SaveChangesAsync();
+        }
+
+        // Insertar Routes solo si no existen
+        if (!hasRoutes)
+        {
+            var routes = GetRoutes(now);
+            await context.Routes.AddRangeAsync(routes);
+            await context.SaveChangesAsync();
+        }
     }
 
     private static List<Driver> GetDrivers(DateTime now)
