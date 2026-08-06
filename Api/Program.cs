@@ -91,7 +91,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Seed Database
-// Seed Database
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -109,6 +108,10 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<Infrastructure.Persistence.Context.ApplicationDbContext>();
         await MasterDataSeeder.SeedAsync(context);
         logger.LogInformation("✅ Seed de datos maestros completado (Drivers, Vehicles, Routes)");
+
+        // Seed Telemetry Data
+        await TelemetrySeeder.SeedAsync(context);
+        logger.LogInformation("✅ Seed de telemetría completado");
     }
     catch (Exception ex)
     {
