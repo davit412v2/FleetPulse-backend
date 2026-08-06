@@ -1,4 +1,5 @@
 using Application.Telemetry.DTOs;
+using Application.Telemetry.Interfaces;
 using Domain.Entities;
 using Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -12,11 +13,16 @@ namespace Api.Controllers;
 public class TelemetryController : ControllerBase
 {
     private readonly ITelemetryRepository _telemetryRepository;
+    private readonly ITelemetryBroadcastService _broadcastService;
     private readonly ILogger<TelemetryController> _logger;
 
-    public TelemetryController(ITelemetryRepository telemetryRepository, ILogger<TelemetryController> logger)
+    public TelemetryController(
+        ITelemetryRepository telemetryRepository,
+        ITelemetryBroadcastService broadcastService,
+        ILogger<TelemetryController> logger)
     {
         _telemetryRepository = telemetryRepository;
+        _broadcastService = broadcastService;
         _logger = logger;
     }
 
@@ -51,7 +57,12 @@ public class TelemetryController : ControllerBase
         if (result == null)
             return NotFound();
 
-        return Ok(MapToDto(result));
+        var telemetryDto = MapToDto(result);
+
+        await _broadcastService.BroadcastTelemetryAsync(telemetryDto);
+        await _broadcastService.BroadcastTelemetryToVehicleGroupAsync(dto.VehicleId.ToString(), telemetryDto);
+
+        return Ok(telemetryDto);
     }
 
     /// <summary>
@@ -101,6 +112,7 @@ public class TelemetryController : ControllerBase
         return Ok(telemetryList.Select(MapToDto).ToList());
     }
 
+    // Helper method para mapear Entity → DTO
     private static TelemetryDto MapToDto(Domain.Entities.Telemetry telemetry)
     {
         return new TelemetryDto

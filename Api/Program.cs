@@ -6,6 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Domain.Interfaces;
 using Application.Authentication.Interfaces;
+using Api.Services;
+using Application.Telemetry.Interfaces;
+using Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,9 +44,30 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
     };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddAuthorization();
+
+// SignalR
+builder.Services.AddSignalR();
+
+// SignalR Services
+builder.Services.AddScoped<ITelemetryBroadcastService, TelemetryBroadcastService>();
 
 // CORS
 builder.Services.AddCors(options =>
@@ -52,14 +76,14 @@ builder.Services.AddCors(options =>
     {
         if (builder.Environment.IsDevelopment())
         {
-           
-            policy.AllowAnyOrigin()
+            
+            policy.SetIsOriginAllowed(_ => true) 
                   .AllowAnyMethod()
-                  .AllowAnyHeader();
+                  .AllowAnyHeader()
+                  .AllowCredentials(); 
         }
         else
         {
-            
             var allowedOrigins = builder.Configuration
                 .GetSection("Cors:AllowedOrigins")
                 .Get<string[]>() ?? Array.Empty<string>();
@@ -83,12 +107,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAll");
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<TelemetryHub>("/hubs/telemetry");
+
 
 // Seed Database
 using (var scope = app.Services.CreateScope())
