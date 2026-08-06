@@ -1,3 +1,7 @@
+using Api.Service;
+using Api.Services;
+using Application.Alerts.DTOs;
+using Application.Alerts.Services;
 using Application.Telemetry.DTOs;
 using Application.Telemetry.Interfaces;
 using Domain.Entities;
@@ -16,14 +20,25 @@ public class TelemetryController : ControllerBase
     private readonly ITelemetryBroadcastService _broadcastService;
     private readonly ILogger<TelemetryController> _logger;
 
+    private readonly IAlertRepository _alertRepository;
+    private readonly IAlertRuleEngine _alertRuleEngine;
+    private readonly IAlertBroadcastService _alertBroadcastService;
+
     public TelemetryController(
         ITelemetryRepository telemetryRepository,
         ITelemetryBroadcastService broadcastService,
-        ILogger<TelemetryController> logger)
+        ILogger<TelemetryController> logger,
+        IAlertRepository alertRepository,
+        IAlertRuleEngine alertRuleEngine,
+        IAlertBroadcastService alertBroadcastService
+        )
     {
         _telemetryRepository = telemetryRepository;
         _broadcastService = broadcastService;
         _logger = logger;
+        _alertRepository = alertRepository;
+        _alertRuleEngine = alertRuleEngine;
+        _alertBroadcastService = alertBroadcastService;
     }
 
     /// <summary>
@@ -54,8 +69,11 @@ public class TelemetryController : ControllerBase
 
         var result = await _telemetryRepository.GetByIdAsync(telemetry.Id);
 
+
         if (result == null)
             return NotFound();
+
+        await AlertService.GeneratedAlert(_alertRuleEngine, _alertRepository, _alertBroadcastService, result);
 
         var telemetryDto = MapToDto(result);
 

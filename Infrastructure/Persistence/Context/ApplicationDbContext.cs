@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Route> Routes { get; set; }
     public DbSet<RoutePoint> RoutePoints { get; set; }
     public DbSet<Telemetry> Telemetry { get; set; }
+    public DbSet<Alert> Alerts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

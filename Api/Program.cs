@@ -9,6 +9,8 @@ using Application.Authentication.Interfaces;
 using Api.Services;
 using Application.Telemetry.Interfaces;
 using Api.Hubs;
+using Infrastructure.Persistence.Repositories;
+using Application.Alerts.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,7 +52,6 @@ builder.Services.AddAuthentication(options =>
         OnMessageReceived = context =>
         {
             var accessToken = context.Request.Query["access_token"];
-
             var path = context.HttpContext.Request.Path;
             if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
             {
@@ -69,30 +70,21 @@ builder.Services.AddSignalR();
 // SignalR Services
 builder.Services.AddScoped<ITelemetryBroadcastService, TelemetryBroadcastService>();
 
-// CORS
+// Alert
+builder.Services.AddScoped<IAlertRepository, AlertRepository>();
+builder.Services.AddScoped<IAlertRuleEngine, AlertRuleEngine>();
+builder.Services.AddScoped<IAlertBroadcastService, AlertBroadcastService>();
+
+// CORS Configuration
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        if (builder.Environment.IsDevelopment())
-        {
-            
-            policy.SetIsOriginAllowed(_ => true) 
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials(); 
-        }
-        else
-        {
-            var allowedOrigins = builder.Configuration
-                .GetSection("Cors:AllowedOrigins")
-                .Get<string[]>() ?? Array.Empty<string>();
-
-            policy.WithOrigins(allowedOrigins)
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials();
-        }
+        // En desarrollo o cuando se permita cualquier origen
+        policy.SetIsOriginAllowed(_ => true)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -105,16 +97,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll");
+app.UseRouting();
 
-// app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<TelemetryHub>("/hubs/telemetry");
-
 
 // Seed Database
 using (var scope = app.Services.CreateScope())
@@ -124,18 +115,15 @@ using (var scope = app.Services.CreateScope())
     
     try
     {
-        // Seed Users
         var userRepository = services.GetRequiredService<IUserRepository>();
         var passwordHasher = services.GetRequiredService<IPasswordHasher>();
         await DatabaseSeeder.SeedAsync(userRepository, passwordHasher);
         logger.LogInformation("✅ Seed de usuarios completado");
 
-        // Seed Master Data (Drivers, Vehicles, Routes)
         var context = services.GetRequiredService<Infrastructure.Persistence.Context.ApplicationDbContext>();
         await MasterDataSeeder.SeedAsync(context);
         logger.LogInformation("✅ Seed de datos maestros completado (Drivers, Vehicles, Routes)");
 
-        // Seed Telemetry Data
         await TelemetrySeeder.SeedAsync(context);
         logger.LogInformation("✅ Seed de telemetría completado");
     }
