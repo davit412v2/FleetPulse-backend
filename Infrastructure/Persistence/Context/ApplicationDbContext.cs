@@ -13,22 +13,18 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    // DbSets se agregarán aquí conforme se implementen las entidades
-    // public DbSet<User> Users { get; set; }
-    // public DbSet<Vehicle> Vehicles { get; set; }
-    // etc.
+    // DbSets
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         
-        // Aplicar configuraciones desde Infrastructure/Persistence/Configurations
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // Aquí se puede implementar lógica de auditoría automática
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {
             if (entry.State == EntityState.Modified)
