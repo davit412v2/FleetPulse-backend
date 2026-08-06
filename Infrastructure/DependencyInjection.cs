@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Application.Authentication.Interfaces;
+using Application.Telemetry.Interfaces;
 
 namespace Infrastructure;
 
@@ -33,7 +34,7 @@ public static class DependencyInjection
         // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();
-
+        
         // Background Services
         services.AddHostedService<TelemetryCleanupService>();
 

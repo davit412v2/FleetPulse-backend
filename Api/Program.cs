@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Domain.Interfaces;
 using Application.Authentication.Interfaces;
+using Api.Services;
+using Application.Telemetry.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +46,12 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// SignalR
+builder.Services.AddSignalR();
+
+// SignalR Services
+builder.Services.AddScoped<ITelemetryBroadcastService, TelemetryBroadcastService>();
 
 // CORS
 builder.Services.AddCors(options =>
@@ -89,6 +97,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 
 // Seed Database
 using (var scope = app.Services.CreateScope())
