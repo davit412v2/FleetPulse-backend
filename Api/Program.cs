@@ -91,22 +91,28 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Seed Database
+// Seed Database
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    
     try
     {
+        // Seed Users
         var userRepository = services.GetRequiredService<IUserRepository>();
         var passwordHasher = services.GetRequiredService<IPasswordHasher>();
         await DatabaseSeeder.SeedAsync(userRepository, passwordHasher);
-        
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogInformation("Seed de base de datos completado");
+        logger.LogInformation("✅ Seed de usuarios completado");
+
+        // Seed Master Data (Drivers, Vehicles, Routes)
+        var context = services.GetRequiredService<Infrastructure.Persistence.Context.ApplicationDbContext>();
+        await MasterDataSeeder.SeedAsync(context);
+        logger.LogInformation("✅ Seed de datos maestros completado (Drivers, Vehicles, Routes)");
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Error al ejecutar seed de base de datos");
+        logger.LogError(ex, "❌ Error al ejecutar seed de base de datos");
     }
 }
 

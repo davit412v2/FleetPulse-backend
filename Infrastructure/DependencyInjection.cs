@@ -19,11 +19,9 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // JWT Settings
         services.Configure<JwtSettings>(options => 
             configuration.GetSection("JwtSettings").Bind(options));
 
-        // Database
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         
         services.AddDbContext<ApplicationDbContext>(options =>
@@ -35,10 +33,12 @@ public static class DependencyInjection
             );
         });
 
-        // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
 
-        // Services
+        services.AddScoped<IDriverRepository, DriverRepository>();
+        services.AddScoped<IVehicleRepository, VehicleRepository>();
+        services.AddScoped<IRouteRepository, RouteRepository>();
+
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();
 
