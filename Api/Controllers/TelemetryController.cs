@@ -1,0 +1,121 @@
+using Application.Telemetry.DTOs;
+using Domain.Entities;
+using Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class TelemetryController : ControllerBase
+{
+    private readonly ITelemetryRepository _telemetryRepository;
+    private readonly ILogger<TelemetryController> _logger;
+
+    public TelemetryController(ITelemetryRepository telemetryRepository, ILogger<TelemetryController> logger)
+    {
+        _telemetryRepository = telemetryRepository;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Crear un nuevo registro de telemetría
+    /// </summary>
+    [HttpPost]
+    public async Task<ActionResult<TelemetryDto>> Create([FromBody] CreateTelemetryDto dto)
+    {
+        var telemetry = new Domain.Entities.Telemetry
+        {
+            Id = Guid.NewGuid(),
+            VehicleId = dto.VehicleId,
+            RouteId = dto.RouteId,
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude,
+            Speed = dto.Speed,
+            FuelLevel = dto.FuelLevel,
+            Temperature = dto.Temperature,
+            Timestamp = dto.Timestamp ?? DateTime.UtcNow,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _telemetryRepository.AddAsync(telemetry);
+        await _telemetryRepository.SaveChangesAsync();
+
+        _logger.LogInformation("Telemetría creada para vehículo {VehicleId}", dto.VehicleId);
+
+        var result = await _telemetryRepository.GetByIdAsync(telemetry.Id);
+
+        if (result == null)
+            return NotFound();
+
+        return Ok(MapToDto(result));
+    }
+
+    /// <summary>
+    /// Obtener telemetría por ID
+    /// </summary>
+    [HttpGet("{id}")]
+    public async Task<ActionResult<TelemetryDto>> GetById(Guid id)
+    {
+        var telemetry = await _telemetryRepository.GetByIdAsync(id);
+
+        if (telemetry == null)
+            return NotFound();
+
+        return Ok(MapToDto(telemetry));
+    }
+
+    /// <summary>
+    /// Obtener telemetría reciente (últimas 24 horas por defecto)
+    /// </summary>
+    [HttpGet("recent")]
+    public async Task<ActionResult<List<TelemetryDto>>> GetRecent([FromQuery] int hours = 24)
+    {
+        var telemetryList = await _telemetryRepository.GetRecentAsync(hours);
+        return Ok(telemetryList.Select(MapToDto).ToList());
+    }
+
+    /// <summary>
+    /// Obtener telemetría de un vehículo específico
+    /// </summary>
+    [HttpGet("vehicle/{vehicleId}")]
+    public async Task<ActionResult<List<TelemetryDto>>> GetByVehicle(Guid vehicleId, [FromQuery] int limit = 100)
+    {
+        var telemetryList = await _telemetryRepository.GetByVehicleIdAsync(vehicleId, limit);
+        return Ok(telemetryList.Select(MapToDto).ToList());
+    }
+
+    /// <summary>
+    /// Obtener telemetría de un vehículo en un rango de fechas
+    /// </summary>
+    [HttpGet("vehicle/{vehicleId}/range")]
+    public async Task<ActionResult<List<TelemetryDto>>> GetByVehicleAndDateRange(
+        Guid vehicleId,
+        [FromQuery] DateTime startDate,
+        [FromQuery] DateTime endDate)
+    {
+        var telemetryList = await _telemetryRepository.GetByVehicleAndDateRangeAsync(vehicleId, startDate, endDate);
+        return Ok(telemetryList.Select(MapToDto).ToList());
+    }
+
+    private static TelemetryDto MapToDto(Domain.Entities.Telemetry telemetry)
+    {
+        return new TelemetryDto
+        {
+            Id = telemetry.Id,
+            VehicleId = telemetry.VehicleId,
+            VehiclePlate = telemetry.Vehicle?.Plate ?? string.Empty,
+            RouteId = telemetry.RouteId,
+            RouteName = telemetry.Route?.Name,
+            Latitude = telemetry.Latitude,
+            Longitude = telemetry.Longitude,
+            Speed = telemetry.Speed,
+            FuelLevel = telemetry.FuelLevel,
+            Temperature = telemetry.Temperature,
+            Timestamp = telemetry.Timestamp
+        };
+    }
+}
