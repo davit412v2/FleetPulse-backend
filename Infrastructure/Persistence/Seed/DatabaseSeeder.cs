@@ -6,7 +6,7 @@ using Domain.Interfaces;
 namespace Infrastructure.Persistence.Seed;
 
 /// <summary>
-/// Clase para poblar datos iniciales
+/// Clase para poblar datos iniciales de usuarios
 /// </summary>
 public static class DatabaseSeeder
 {

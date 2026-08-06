@@ -13,8 +13,12 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    // DbSets
     public DbSet<User> Users { get; set; }
+
+    public DbSet<Driver> Drivers { get; set; }
+    public DbSet<Vehicle> Vehicles { get; set; }
+    public DbSet<Route> Routes { get; set; }
+    public DbSet<RoutePoint> RoutePoints { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
